@@ -38,3 +38,38 @@ def deserialize_token_payload(
             raise ValueError("FERNET_KEY is required to decrypt stored Garmin tokens")
         return decrypt_token(token_payload, fernet_key)
     return token_payload
+
+
+def load_token_payload(conn, account_key: str, fernet_key: str | None) -> str | None:
+    row = conn.execute(
+        """
+        select token_payload, is_encrypted
+        from garmin_auth_tokens
+        where account_key = %s
+        """,
+        (account_key,),
+    ).fetchone()
+    if row is None:
+        return None
+    return deserialize_token_payload(row[0], row[1], fernet_key)
+
+
+def save_token_payload(
+    conn,
+    account_key: str,
+    token_payload: str,
+    fernet_key: str | None,
+) -> None:
+    record = serialize_token_record(account_key, token_payload, fernet_key)
+    conn.execute(
+        """
+        insert into garmin_auth_tokens (account_key, token_payload, is_encrypted, created_at, updated_at)
+        values (%s, %s, %s, now(), now())
+        on conflict (account_key)
+        do update set
+            token_payload = excluded.token_payload,
+            is_encrypted = excluded.is_encrypted,
+            updated_at = now()
+        """,
+        (record.account_key, record.token_payload, record.is_encrypted),
+    )

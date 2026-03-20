@@ -4,8 +4,8 @@ import os
 
 @dataclass(frozen=True)
 class AppConfig:
-    garmin_email: str
-    garmin_password: str
+    garmin_email: str | None
+    garmin_password: str | None
     garmin_account_key: str
     database_url: str
     timezone: str
@@ -15,8 +15,8 @@ class AppConfig:
     @classmethod
     def from_env(cls) -> "AppConfig":
         return cls(
-            garmin_email=os.environ["GARMIN_EMAIL"],
-            garmin_password=os.environ["GARMIN_PASSWORD"],
+            garmin_email=os.getenv("GARMIN_EMAIL"),
+            garmin_password=os.getenv("GARMIN_PASSWORD"),
             garmin_account_key=os.environ["GARMIN_ACCOUNT_KEY"],
             database_url=os.environ["DATABASE_URL"],
             timezone=os.environ["TIMEZONE"],

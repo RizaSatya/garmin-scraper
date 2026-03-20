@@ -12,3 +12,16 @@ def test_from_env_uses_defaults_for_optional_settings(monkeypatch):
 
     assert config.sync_days == 7
     assert config.fernet_key is None
+
+
+def test_from_env_allows_missing_bootstrap_credentials(monkeypatch):
+    monkeypatch.delenv("GARMIN_EMAIL", raising=False)
+    monkeypatch.delenv("GARMIN_PASSWORD", raising=False)
+    monkeypatch.setenv("GARMIN_ACCOUNT_KEY", "personal")
+    monkeypatch.setenv("DATABASE_URL", "postgresql://")
+    monkeypatch.setenv("TIMEZONE", "Asia/Jakarta")
+
+    config = AppConfig.from_env()
+
+    assert config.garmin_email is None
+    assert config.garmin_password is None
