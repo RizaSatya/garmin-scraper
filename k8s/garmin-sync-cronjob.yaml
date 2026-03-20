@@ -4,6 +4,7 @@ metadata:
   name: garmin-sync
 spec:
   schedule: "59 23 * * *"
+  # Requires a cluster that supports CronJob.spec.timeZone.
   timeZone: Asia/Jakarta
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
@@ -17,7 +18,7 @@ spec:
           containers:
             - name: garmin-sync
               image: your-registry/garmin-sync:latest
-              imagePullPolicy: IfNotPresent
+              imagePullPolicy: Always
               command: ["garmin-sync"]
               env:
                 - name: TIMEZONE
