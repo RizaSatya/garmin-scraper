@@ -1,0 +1,25 @@
+{
+  "activityId": 987654321,
+  "activityName": "Morning Run",
+  "startTimeGMT": "2026-03-20T00:30:00.000Z",
+  "activityTypeDTO": {
+    "typeKey": "running"
+  },
+  "deviceMetaDataDTO": {
+    "deviceDisplayName": "Forerunner 965"
+  },
+  "summaryDTO": {
+    "duration": 3600,
+    "movingDuration": 3500,
+    "elapsedDuration": 3700,
+    "distance": 10000,
+    "calories": 700,
+    "averageHR": 150,
+    "maxHR": 172,
+    "averageSpeed": 2.78,
+    "elevationGain": 95,
+    "elevationLoss": 93,
+    "aerobicTrainingEffect": 3.5,
+    "anaerobicTrainingEffect": 1.2
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "score": 78,
+  "hrvStatus": "balanced",
+  "vo2Max": 52.3,
+  "trainingStatus": "productive",
+  "racePredictions": {
+    "racePrediction5k": 1240,
+    "racePrediction10k": 2580,
+    "racePredictionHalfMarathon": 5700,
+    "racePredictionMarathon": 12300
+  },
+  "hillScore": 62.1,
+  "enduranceScore": 6400
+}

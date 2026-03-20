@@ -1,0 +1,11 @@
+{
+  "totalSteps": 12345,
+  "totalDistanceMeters": 9876.5,
+  "totalKilocalories": 2345,
+  "activeKilocalories": 678,
+  "floorsAscendedInMeters": 12,
+  "activeSeconds": 5400,
+  "moderateIntensityMinutes": 35,
+  "vigorousIntensityMinutes": 12,
+  "restingHeartRate": 52
+}

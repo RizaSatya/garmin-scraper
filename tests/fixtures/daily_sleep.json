@@ -1,0 +1,10 @@
+{
+  "sleepScore": 81,
+  "sleepTimeSeconds": 26100,
+  "deepSleepSeconds": 4800,
+  "lightSleepSeconds": 12300,
+  "remSleepSeconds": 5400,
+  "awakeSleepSeconds": 600,
+  "sleepStartTimestampGMT": "2026-03-19T15:00:00.000Z",
+  "sleepEndTimestampGMT": "2026-03-19T22:15:00.000Z"
+}
