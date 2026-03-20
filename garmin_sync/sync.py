@@ -15,6 +15,10 @@ from garmin_sync.mappers import (
 )
 
 
+def log_progress(message: str) -> None:
+    print(message, flush=True)
+
+
 def build_sync_dates(today: date, sync_days: int) -> list[str]:
     start = today - timedelta(days=sync_days)
     current = start
@@ -84,6 +88,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
                 source_id=source_id,
             )
         )
+        log_progress(f"Mapped range table {table_name} (1 row)")
 
     def append_activity_table(table_name: str, activity_id: int, payload):
         if payload is None:
@@ -97,15 +102,18 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
         )
 
     for metric_date in metric_dates:
+        log_progress(f"Syncing Garmin date {metric_date}")
         fetched_at = datetime.utcnow().isoformat()
 
         stats = client.get_stats(metric_date)
+        log_progress(f"Fetched stats for {metric_date}")
         raw_payloads.append(
             build_raw_payload(account_key, "stats", metric_date, metric_date, stats, fetched_at)
         )
         daily_metrics.append(map_daily_metrics(account_key, metric_date, stats))
 
         sleep = client.get_sleep_data(metric_date)
+        log_progress(f"Fetched sleep_data for {metric_date}")
         raw_payloads.append(
             build_raw_payload(account_key, "sleep_data", metric_date, metric_date, sleep, fetched_at)
         )
@@ -135,6 +143,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
             payload = safe_fetch(fetcher)
             if payload is None:
                 continue
+            log_progress(f"Fetched {endpoint_name} for {metric_date}")
             raw_payloads.append(
                 build_raw_payload(account_key, endpoint_name, metric_date, metric_date, payload, fetched_at)
             )
@@ -144,6 +153,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
                 append_list_table(table_name, payload, metric_date_fallback=metric_date)
 
         training_readiness = client.get_training_readiness(metric_date)
+        log_progress(f"Fetched training_readiness for {metric_date}")
         raw_payloads.append(
             build_raw_payload(
                 account_key,
@@ -167,6 +177,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
             ("body_battery", lambda: client.get_body_battery(metric_date, metric_date)),
         ):
             payload = fetcher()
+            log_progress(f"Fetched {endpoint_name} for {metric_date}")
             raw_payloads.append(
                 build_raw_payload(
                     account_key,
@@ -181,6 +192,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
 
         for activity in client.get_activities_by_date(metric_date, metric_date, sortorder="asc"):
             activity_id = str(activity["activityId"])
+            log_progress(f"Fetching activity detail {activity_id} for {metric_date}")
             detail = client.get_activity(activity_id)
             raw_payloads.append(
                 build_raw_payload(
@@ -207,6 +219,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
                 payload = safe_fetch(fetcher)
                 if payload is None:
                     continue
+                log_progress(f"Fetched {endpoint_name} for activity {activity_id}")
                 raw_payloads.append(
                     build_raw_payload(
                         account_key,
@@ -238,6 +251,7 @@ def collect_sync_payloads(client, account_key: str, metric_dates: list[str]) -> 
         payload = safe_fetch(fetcher)
         if payload is None:
             continue
+        log_progress(f"Fetched range endpoint {table_name}")
         raw_payloads.append(
             build_raw_payload(account_key, endpoint_name, range_end, source_id, payload, fetched_at)
         )
