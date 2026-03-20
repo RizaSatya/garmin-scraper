@@ -45,3 +45,31 @@ If you want to apply the checked-in schema file directly:
 ```bash
 psql "$DATABASE_URL" -f sql/schema.sql
 ```
+
+## Docker image
+
+Replace `your-registry/garmin-sync:latest` with the image name you actually publish.
+
+```bash
+docker build -t your-registry/garmin-sync:latest .
+```
+
+## Kubernetes
+
+This manifest expects a Kubernetes cluster that supports `CronJob.spec.timeZone`.
+
+Create the secret:
+
+```bash
+kubectl create secret generic garmin-sync-secrets \
+  --from-literal=GARMIN_EMAIL=... \
+  --from-literal=GARMIN_PASSWORD=... \
+  --from-literal=DATABASE_URL=... \
+  --from-literal=FERNET_KEY=...
+```
+
+Apply the CronJob:
+
+```bash
+kubectl apply -f k8s/garmin-sync-cronjob.yaml
+```
