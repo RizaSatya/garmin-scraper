@@ -52,11 +52,13 @@ Replace `your-registry/garmin-sync:latest` with the image name you actually publ
 
 ```bash
 docker build -t your-registry/garmin-sync:latest .
+docker push your-registry/garmin-sync:latest
 ```
 
 ## Kubernetes
 
 This manifest expects a Kubernetes cluster that supports `CronJob.spec.timeZone`.
+Create the secret and apply the manifest in the same namespace where you want the CronJob to run.
 
 Create the secret:
 
