@@ -17,7 +17,8 @@ spec:
           restartPolicy: Never
           containers:
             - name: garmin-sync
-              image: your-registry/garmin-sync:latest
+              # Replace with the exact image tag you built and pushed before applying.
+              image: your-registry/garmin-sync:replace-with-tag
               imagePullPolicy: IfNotPresent
               command: ["garmin-sync"]
               env:

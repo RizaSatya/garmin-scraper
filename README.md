@@ -48,22 +48,25 @@ psql "$DATABASE_URL" -f sql/schema.sql
 
 ## Docker image
 
-Replace `your-registry/garmin-sync:latest` with the image name you actually publish.
+Pick an immutable image tag, build it, and push it to the registry your cluster can pull from.
 
 ```bash
-docker build -t your-registry/garmin-sync:latest .
-docker push your-registry/garmin-sync:latest
+IMAGE=your-registry/garmin-sync:2026-03-20
+
+docker build -t "$IMAGE" .
+docker push "$IMAGE"
 ```
 
 ## Kubernetes
 
 This manifest expects a Kubernetes cluster that supports `CronJob.spec.timeZone`.
 Create the secret and apply the manifest in the same namespace where you want the CronJob to run.
+Before applying, update [`k8s/garmin-sync-cronjob.yaml`](/Users/riza.satyabudhi/Documents/workshop/claude/garmin-scraper/k8s/garmin-sync-cronjob.yaml) so its `image:` value matches the exact tag you pushed.
 
 Create the secret:
 
 ```bash
-kubectl create secret generic garmin-sync-secrets \
+kubectl -n your-namespace create secret generic garmin-sync-secrets \
   --from-literal=GARMIN_EMAIL=... \
   --from-literal=GARMIN_PASSWORD=... \
   --from-literal=DATABASE_URL=... \
@@ -73,5 +76,5 @@ kubectl create secret generic garmin-sync-secrets \
 Apply the CronJob:
 
 ```bash
-kubectl apply -f k8s/garmin-sync-cronjob.yaml
+kubectl -n your-namespace apply -f k8s/garmin-sync-cronjob.yaml
 ```
