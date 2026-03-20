@@ -1,0 +1,6 @@
+garminconnect
+psycopg[binary]
+cryptography
+
+[dev]
+pytest

@@ -1,0 +1,2 @@
+[console_scripts]
+garmin-sync = garmin_sync.main:main

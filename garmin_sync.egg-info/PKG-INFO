@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: garmin-sync
+Version: 0.1.0
+Requires-Python: >=3.11
+Requires-Dist: garminconnect
+Requires-Dist: psycopg[binary]
+Requires-Dist: cryptography
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"

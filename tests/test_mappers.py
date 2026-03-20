@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 
 from garmin_sync.mappers import (
+    map_payload_table_row,
+    map_payload_table_rows,
     map_activity,
     map_daily_metrics,
     map_sleep_summary,
@@ -55,3 +57,44 @@ def test_map_training_metrics_extracts_readiness_fields():
     assert row["training_readiness"] == 78
     assert row["hrv_status"] == "balanced"
     assert row["race_prediction_5k_seconds"] == 1240
+
+
+def test_map_training_metrics_supports_list_payloads():
+    payload = [
+        {
+            "score": 78,
+            "hrvStatus": "balanced",
+            "racePredictions": {"racePrediction5k": 1240},
+        }
+    ]
+
+    row = map_training_metrics("personal", "2026-03-20", payload)
+
+    assert row["training_readiness"] == 78
+    assert row["hrv_status"] == "balanced"
+    assert row["race_prediction_5k_seconds"] == 1240
+
+
+def test_map_payload_table_row_builds_record_key_for_daily_payload():
+    row = map_payload_table_row(
+        account_key="personal",
+        payload={"foo": "bar"},
+        metric_date="2025-09-01",
+    )
+
+    assert row["record_key"] == "date:2025-09-01|source:summary"
+    assert row["metric_date"] == "2025-09-01"
+
+
+def test_map_payload_table_rows_extracts_dates_from_list_items():
+    rows = map_payload_table_rows(
+        account_key="personal",
+        payload=[
+            {"calendarDate": "2025-09-01", "value": 1},
+            {"calendarDate": "2025-09-02", "value": 2},
+        ],
+        metric_date_fallback="2025-09-01",
+    )
+
+    assert [row["metric_date"] for row in rows] == ["2025-09-01", "2025-09-02"]
+    assert rows[0]["record_key"] == "date:2025-09-01|source:2025-09-01"

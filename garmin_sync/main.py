@@ -8,13 +8,18 @@ from garmin_sync.db import connect_db
 from garmin_sync.garmin_client import bootstrap_garmin_client
 from garmin_sync.repositories import (
     apply_schema,
+    upsert_json_payload_row,
     upsert_activity,
     upsert_daily_metrics,
     upsert_raw_payload,
     upsert_sleep_summary,
     upsert_training_metrics,
 )
-from garmin_sync.sync import build_sync_dates, collect_sync_payloads
+from garmin_sync.sync import (
+    build_sync_dates,
+    build_sync_dates_for_range,
+    collect_sync_payloads,
+)
 from garmin_sync.token_store import load_token_payload, save_token_payload
 
 
@@ -41,8 +46,14 @@ def run_sync_job(config: AppConfig | None = None) -> None:
             app_config.fernet_key,
         )
 
-        today = datetime.now(ZoneInfo(app_config.timezone)).date()
-        metric_dates = build_sync_dates(today, app_config.sync_days)
+        if app_config.backfill_start_date and app_config.backfill_end_date:
+            metric_dates = build_sync_dates_for_range(
+                app_config.backfill_start_date,
+                app_config.backfill_end_date,
+            )
+        else:
+            today = datetime.now(ZoneInfo(app_config.timezone)).date()
+            metric_dates = build_sync_dates(today, app_config.sync_days)
         sync_batch = collect_sync_payloads(
             garmin_client,
             app_config.garmin_account_key,
@@ -59,6 +70,9 @@ def run_sync_job(config: AppConfig | None = None) -> None:
             upsert_activity(conn, row)
         for row in sync_batch["training_metrics"]:
             upsert_training_metrics(conn, row)
+        for table_name, rows in sync_batch["expanded_tables"].items():
+            for row in rows:
+                upsert_json_payload_row(conn, table_name, row)
 
         conn.commit()
 

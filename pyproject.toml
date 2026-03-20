@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "garmin-sync"
 version = "0.1.0"
@@ -13,6 +17,10 @@ garmin-sync = "garmin_sync.main:main"
 
 [project.optional-dependencies]
 dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["garmin_sync*"]
+exclude = ["sql*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

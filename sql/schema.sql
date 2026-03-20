@@ -104,3 +104,56 @@ create table if not exists training_metrics (
     updated_at timestamptz not null,
     primary key (account_key, metric_date)
 );
+
+create table if not exists user_summaries (
+    account_key text not null,
+    record_key text not null,
+    metric_date date,
+    range_start date,
+    range_end date,
+    activity_id bigint,
+    payload jsonb not null,
+    updated_at timestamptz not null,
+    primary key (account_key, record_key)
+);
+
+create table if not exists stats_and_body (like user_summaries including all);
+create table if not exists heart_rate_daily (like user_summaries including all);
+create table if not exists resting_heart_rate_daily (like user_summaries including all);
+create table if not exists stress_daily (like user_summaries including all);
+create table if not exists stress_all_day (like user_summaries including all);
+create table if not exists steps_daily (like user_summaries including all);
+create table if not exists hydration_daily (like user_summaries including all);
+create table if not exists respiration_daily (like user_summaries including all);
+create table if not exists spo2_daily (like user_summaries including all);
+create table if not exists intensity_minutes_daily (like user_summaries including all);
+create table if not exists lifestyle_logging_daily (like user_summaries including all);
+create table if not exists daily_steps_history (like user_summaries including all);
+create table if not exists body_battery_daily (like user_summaries including all);
+create table if not exists body_battery_events (like user_summaries including all);
+create table if not exists floors_daily (like user_summaries including all);
+create table if not exists progress_summaries (like user_summaries including all);
+create table if not exists weekly_steps (like user_summaries including all);
+create table if not exists weekly_stress (like user_summaries including all);
+create table if not exists weekly_intensity_minutes (like user_summaries including all);
+create table if not exists training_readiness_morning (like user_summaries including all);
+create table if not exists hrv_daily (like user_summaries including all);
+create table if not exists max_metrics (like user_summaries including all);
+create table if not exists fitness_age (like user_summaries including all);
+create table if not exists race_predictions (like user_summaries including all);
+create table if not exists hill_scores (like user_summaries including all);
+create table if not exists endurance_scores (like user_summaries including all);
+create table if not exists running_tolerance (like user_summaries including all);
+create table if not exists lactate_threshold (like user_summaries including all);
+create table if not exists cycling_ftp (like user_summaries including all);
+create table if not exists body_composition_daily (like user_summaries including all);
+create table if not exists weigh_ins (like user_summaries including all);
+create table if not exists daily_weigh_ins (like user_summaries including all);
+create table if not exists activity_splits (like user_summaries including all);
+create table if not exists activity_split_summaries (like user_summaries including all);
+create table if not exists activity_typed_splits (like user_summaries including all);
+create table if not exists activity_weather (like user_summaries including all);
+create table if not exists activity_hr_zones (like user_summaries including all);
+create table if not exists activity_power_zones (like user_summaries including all);
+create table if not exists activity_exercise_sets (like user_summaries including all);
+create table if not exists activity_gear_links (like user_summaries including all);

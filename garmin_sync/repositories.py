@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from psycopg import sql
 from psycopg.types.json import Jsonb
 
 
@@ -33,6 +34,38 @@ def raw_payload_upsert_sql() -> str:
     """
 
 
+def json_payload_upsert_sql(table_name: str) -> str:
+    return f"""
+    insert into {table_name} (
+        account_key,
+        record_key,
+        metric_date,
+        range_start,
+        range_end,
+        activity_id,
+        payload,
+        updated_at
+    ) values (
+        %(account_key)s,
+        %(record_key)s,
+        %(metric_date)s,
+        %(range_start)s,
+        %(range_end)s,
+        %(activity_id)s,
+        %(payload)s,
+        now()
+    )
+    on conflict (account_key, record_key)
+    do update set
+        metric_date = excluded.metric_date,
+        range_start = excluded.range_start,
+        range_end = excluded.range_end,
+        activity_id = excluded.activity_id,
+        payload = excluded.payload,
+        updated_at = now()
+    """
+
+
 def apply_schema(conn, schema_path: str = "sql/schema.sql") -> None:
     conn.execute(Path(schema_path).read_text())
 
@@ -40,6 +73,47 @@ def apply_schema(conn, schema_path: str = "sql/schema.sql") -> None:
 def upsert_raw_payload(conn, row: dict) -> None:
     conn.execute(
         raw_payload_upsert_sql(),
+        {
+            **row,
+            "payload": Jsonb(row["payload"]),
+        },
+    )
+
+
+def upsert_json_payload_row(conn, table_name: str, row: dict) -> None:
+    query = sql.SQL(
+        """
+        insert into {table} (
+            account_key,
+            record_key,
+            metric_date,
+            range_start,
+            range_end,
+            activity_id,
+            payload,
+            updated_at
+        ) values (
+            %(account_key)s,
+            %(record_key)s,
+            %(metric_date)s,
+            %(range_start)s,
+            %(range_end)s,
+            %(activity_id)s,
+            %(payload)s,
+            now()
+        )
+        on conflict (account_key, record_key)
+        do update set
+            metric_date = excluded.metric_date,
+            range_start = excluded.range_start,
+            range_end = excluded.range_end,
+            activity_id = excluded.activity_id,
+            payload = excluded.payload,
+            updated_at = now()
+        """
+    ).format(table=sql.Identifier(table_name))
+    conn.execute(
+        query,
         {
             **row,
             "payload": Jsonb(row["payload"]),
