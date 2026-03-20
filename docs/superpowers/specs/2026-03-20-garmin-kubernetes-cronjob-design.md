@@ -50,6 +50,17 @@ The image should be intentionally small and straightforward:
 
 The container should not embed secrets or a `.env` file. All runtime configuration must come from Kubernetes environment variables so the same image can be reused across environments.
 
+### Build context safety
+
+The image build must explicitly prevent local runtime files from entering the image:
+
+- add a `.dockerignore` file
+- exclude `.env`
+- exclude `.venv`
+- exclude git metadata and other local-only development artifacts
+
+Implementation should avoid a broad `COPY . .` pattern unless the ignored-file contract is already in place. This matters because the application auto-loads `.env`, so accidentally baking that file into the image could leak secrets or override intended Kubernetes-provided configuration.
+
 ## Scheduling Design
 
 The Kubernetes workload should use a `CronJob` with:
@@ -70,7 +81,7 @@ Use `concurrencyPolicy: Forbid` so a new run is skipped if the previous run is s
 Use a conservative retry policy:
 
 - `restartPolicy: Never` at the pod level
-- small `backoffLimit` at the job level
+- `backoffLimit: 1` at the job level
 
 This keeps failed executions visible without creating noisy retry storms or multiple overlapping sync attempts.
 
@@ -78,10 +89,16 @@ This keeps failed executions visible without creating noisy retry storms or mult
 
 Keep only a small amount of history:
 
-- a small successful jobs history
-- a small failed jobs history
+- `successfulJobsHistoryLimit: 1`
+- `failedJobsHistoryLimit: 3`
 
 This is enough for troubleshooting while keeping the namespace tidy.
+
+### Kubernetes compatibility
+
+The checked-in manifest should require a Kubernetes version that supports `CronJob.spec.timeZone`.
+
+For the initial version, the design should assume a cluster new enough to support this field rather than adding a second fallback manifest. The README should call out that requirement so operators know the manifest is intended for clusters with timezone-aware CronJobs.
 
 ## Configuration Design
 
@@ -141,6 +158,7 @@ These behaviors are acceptable for the initial version because they are predicta
 The implementation should be limited to a small set of files with clear ownership:
 
 - `Dockerfile`: build and runtime packaging for the application image
+- `.dockerignore`: prevents local secrets and development artifacts from entering the image
 - `k8s/garmin-sync-cronjob.yaml`: Kubernetes `CronJob` manifest and secret contract reference
 - `README.md`: operator documentation for image build, secret creation, and deploy steps
 
