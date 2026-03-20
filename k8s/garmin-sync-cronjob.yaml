@@ -18,7 +18,7 @@ spec:
           containers:
             - name: garmin-sync
               image: your-registry/garmin-sync:latest
-              imagePullPolicy: Always
+              imagePullPolicy: IfNotPresent
               command: ["garmin-sync"]
               env:
                 - name: TIMEZONE
