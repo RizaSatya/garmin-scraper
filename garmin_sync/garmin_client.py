@@ -24,6 +24,27 @@ def without_garmintokens_env():
         if original is not None:
             os.environ["GARMINTOKENS"] = original
 
+
+def hydrate_client_session(client: Garmin) -> None:
+    profile = getattr(client.garth, "profile", None)
+    if not profile:
+        profile = client.garth.connectapi("/userprofile-service/userprofile/profile")
+    if not isinstance(profile, dict) or "displayName" not in profile:
+        raise ValueError("Invalid Garmin profile data from stored session")
+
+    client.display_name = profile.get("displayName")
+    client.full_name = profile.get("fullName")
+
+    settings = client.garth.connectapi(client.garmin_connect_user_settings_url)
+    if not isinstance(settings, dict) or "userData" not in settings:
+        raise ValueError("Invalid Garmin user settings from stored session")
+    client.unit_system = settings["userData"].get("measurementSystem")
+
+
+def login_with_stored_tokens(client: Garmin, stored_token_payload: str) -> None:
+    client.garth.loads(stored_token_payload)
+    hydrate_client_session(client)
+
 def bootstrap_garmin_client(
     garmin_email: str | None,
     garmin_password: str | None,
@@ -39,7 +60,16 @@ def bootstrap_garmin_client(
     )
 
     if mode == "stored_tokens":
-        client.login(stored_token_payload)
+        try:
+            login_with_stored_tokens(client, stored_token_payload)
+        except Exception:
+            if not garmin_email:
+                raise
+            with without_garmintokens_env():
+                result1, result2 = client.login()
+            if result1 == "needs_mfa":
+                mfa_code = input("Please enter your MFA code: ")
+                client.resume_login(result2, mfa_code)
     else:
         with without_garmintokens_env():
             result1, result2 = client.login()
